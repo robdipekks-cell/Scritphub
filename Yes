@@ -1,0 +1,174 @@
+-- [[ Script Hub by Oorbits - Modernized Edition ]] --
+
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+
+-- Clean up
+if CoreGui:FindFirstChild("OorbitsScriptHub") then
+    CoreGui.OorbitsScriptHub:Destroy()
+end
+if Lighting:FindFirstChild("HubBlur") then
+    Lighting.HubBlur:Destroy()
+end
+
+-- Blur Effect
+local Blur = Instance.new("BlurEffect")
+Blur.Name = "HubBlur"
+Blur.Size = 0
+Blur.Parent = Lighting
+TweenService:Create(Blur, TweenInfo.new(0.5), {Size = 20}):Play()
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "OorbitsScriptHub"
+ScreenGui.Parent = CoreGui
+
+-- CanvasGroup for Fade-in Animation
+local MainFrame = Instance.new("CanvasGroup")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 620, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -310, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+MainFrame.GroupTransparency = 1
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(45, 45, 55)
+UIStroke.Thickness = 1.5
+UIStroke.Transparency = 0.5
+UIStroke.Parent = MainFrame
+
+-- Fade In
+TweenService:Create(MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {GroupTransparency = 0}):Play()
+
+-- Title Bar
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.BackgroundTransparency = 1
+Title.Text = "Script Hub by Oorbits"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 22
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+-- Search Bar Container
+local SearchBar = Instance.new("TextBox")
+SearchBar.Size = UDim2.new(0, 270, 0, 35)
+SearchBar.Position = UDim2.new(0, 20, 0, 60)
+SearchBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+SearchBar.PlaceholderText = "Search scripts..."
+SearchBar.Text = ""
+SearchBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBar.Font = Enum.Font.Gotham
+SearchBar.Parent = MainFrame
+
+local SearchCorner = Instance.new("UICorner")
+SearchCorner.CornerRadius = UDim.new(0, 8)
+SearchCorner.Parent = SearchBar
+
+-- Left List (Scrolling)
+local ListFrame = Instance.new("ScrollingFrame")
+ListFrame.Size = UDim2.new(0, 270, 0, 290)
+ListFrame.Position = UDim2.new(0, 20, 0, 105)
+ListFrame.BackgroundTransparency = 1
+ListFrame.ScrollBarThickness = 2
+ListFrame.Parent = MainFrame
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Padding = UDim.new(0, 8)
+ListLayout.Parent = ListFrame
+
+-- Right Preview Panel
+local Preview = Instance.new("Frame")
+Preview.Size = UDim2.new(0, 300, 0, 335)
+Preview.Position = UDim2.new(0, 300, 0, 60)
+Preview.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Preview.Parent = MainFrame
+
+local PrevCorner = Instance.new("UICorner")
+PrevCorner.CornerRadius = UDim.new(0, 10)
+PrevCorner.Parent = Preview
+
+local DisplayImg = Instance.new("ImageLabel")
+DisplayImg.Size = UDim2.new(1, -20, 0, 170)
+DisplayImg.Position = UDim2.new(0, 10, 0, 10)
+DisplayImg.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+DisplayImg.Image = ""
+DisplayImg.ScaleType = Enum.ScaleType.Crop
+DisplayImg.Parent = Preview
+
+local ImgCorner = Instance.new("UICorner")
+ImgCorner.CornerRadius = UDim.new(0, 8)
+ImgCorner.Parent = DisplayImg
+
+local PlayBtn = Instance.new("TextButton")
+PlayBtn.Size = UDim2.new(1, -40, 0, 45)
+PlayBtn.Position = UDim2.new(0, 20, 1, -65)
+PlayBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 255)
+PlayBtn.Text = "EXECUTE"
+PlayBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlayBtn.Font = Enum.Font.GothamBold
+PlayBtn.TextSize = 16
+PlayBtn.Visible = false
+PlayBtn.Parent = Preview
+
+local PlayCorner = Instance.new("UICorner")
+PlayCorner.CornerRadius = UDim.new(0, 8)
+PlayCorner.Parent = PlayBtn
+
+-- Data Table
+local Games = {
+    {Name = "Nuke Your City", ID = "113918641206373", Script = "https://raw.githubusercontent.com/robdipekks-cell/Nuke/refs/heads/main/Nukes"},
+    {Name = "Oil Empire", ID = "107095834793267", Script = "https://raw.githubusercontent.com/robdipekks-cell/Oil/refs/heads/main/Oiled"}
+}
+
+local currentScript = nil
+
+for _, data in pairs(Games) do
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(1, -10, 0, 45)
+    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    Btn.Text = "  " .. data.Name
+    Btn.TextColor3 = Color3.fromRGB(180, 180, 180)
+    Btn.Font = Enum.Font.GothamSemibold
+    Btn.TextSize = 14
+    Btn.TextXAlignment = Enum.TextXAlignment.Left
+    Btn.Parent = ListFrame
+    
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
+
+    -- Hover Animations
+    Btn.MouseEnter:Connect(function()
+        TweenService:Create(Btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 40, 50), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+    end)
+    Btn.MouseLeave:Connect(function()
+        if currentScript ~= data.Script then
+            TweenService:Create(Btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 35), TextColor3 = Color3.fromRGB(180, 180, 180)}):Play()
+        end
+    end)
+
+    Btn.MouseButton1Click:Connect(function()
+        currentScript = data.Script
+        DisplayImg.Image = "rbxthumb://type=Asset&id="..data.ID.."&w=420&h=420"
+        PlayBtn.Visible = true
+        -- Execution Logic inside PlayBtn below
+    end)
+end
+
+-- Close & Execute Logic
+PlayBtn.MouseButton1Click:Connect(function()
+    if currentScript then
+        -- Fade Out Animation
+        TweenService:Create(MainFrame, TweenInfo.new(0.4), {GroupTransparency = 1, Size = UDim2.new(0, 580, 0, 380)}):Play()
+        TweenService:Create(Blur, TweenInfo.new(0.4), {Size = 0}):Play()
+        
+        task.wait(0.4)
+        loadstring(game:HttpGet(currentScript))()
+        ScreenGui:Destroy()
+        Blur:Destroy()
+    end
+end)
