@@ -1,174 +1,869 @@
--- [[ Script Hub by Oorbits - Modernized Edition ]] --
+-- [[ Script Hub by Oorbits - Cyber Edition v2.0 ]] --
 
-local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
-local Lighting = game:GetService("Lighting")
+local CoreGui        = game:GetService("CoreGui")
+local TweenService   = game:GetService("TweenService")
+local Lighting       = game:GetService("Lighting")
+local RunService     = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
--- Clean up
-if CoreGui:FindFirstChild("OorbitsScriptHub") then
-    CoreGui.OorbitsScriptHub:Destroy()
-end
-if Lighting:FindFirstChild("HubBlur") then
-    Lighting.HubBlur:Destroy()
-end
+-- ─────────────────────────────────────────
+--  CLEANUP
+-- ─────────────────────────────────────────
+if CoreGui:FindFirstChild("OorbitsHub") then CoreGui.OorbitsHub:Destroy() end
+if Lighting:FindFirstChild("HubBlur")   then Lighting.HubBlur:Destroy()  end
 
--- Blur Effect
+-- ─────────────────────────────────────────
+--  BLUR
+-- ─────────────────────────────────────────
 local Blur = Instance.new("BlurEffect")
 Blur.Name = "HubBlur"
 Blur.Size = 0
 Blur.Parent = Lighting
-TweenService:Create(Blur, TweenInfo.new(0.5), {Size = 20}):Play()
+TweenService:Create(Blur, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Size = 18}):Play()
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "OorbitsScriptHub"
-ScreenGui.Parent = CoreGui
+-- ─────────────────────────────────────────
+--  SCREEN GUI
+-- ─────────────────────────────────────────
+local Gui = Instance.new("ScreenGui")
+Gui.Name            = "OorbitsHub"
+Gui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+Gui.IgnoreGuiInset  = true
+Gui.Parent          = CoreGui
 
--- CanvasGroup for Fade-in Animation
-local MainFrame = Instance.new("CanvasGroup")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 620, 0, 420)
-MainFrame.Position = UDim2.new(0.5, -310, 0.5, -210)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
-MainFrame.GroupTransparency = 1
-MainFrame.Parent = ScreenGui
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(45, 45, 55)
-UIStroke.Thickness = 1.5
-UIStroke.Transparency = 0.5
-UIStroke.Parent = MainFrame
-
--- Fade In
-TweenService:Create(MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {GroupTransparency = 0}):Play()
-
--- Title Bar
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 50)
-Title.BackgroundTransparency = 1
-Title.Text = "Script Hub by Oorbits"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 22
-Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
-
--- Search Bar Container
-local SearchBar = Instance.new("TextBox")
-SearchBar.Size = UDim2.new(0, 270, 0, 35)
-SearchBar.Position = UDim2.new(0, 20, 0, 60)
-SearchBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-SearchBar.PlaceholderText = "Search scripts..."
-SearchBar.Text = ""
-SearchBar.TextColor3 = Color3.fromRGB(255, 255, 255)
-SearchBar.Font = Enum.Font.Gotham
-SearchBar.Parent = MainFrame
-
-local SearchCorner = Instance.new("UICorner")
-SearchCorner.CornerRadius = UDim.new(0, 8)
-SearchCorner.Parent = SearchBar
-
--- Left List (Scrolling)
-local ListFrame = Instance.new("ScrollingFrame")
-ListFrame.Size = UDim2.new(0, 270, 0, 290)
-ListFrame.Position = UDim2.new(0, 20, 0, 105)
-ListFrame.BackgroundTransparency = 1
-ListFrame.ScrollBarThickness = 2
-ListFrame.Parent = MainFrame
-
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Padding = UDim.new(0, 8)
-ListLayout.Parent = ListFrame
-
--- Right Preview Panel
-local Preview = Instance.new("Frame")
-Preview.Size = UDim2.new(0, 300, 0, 335)
-Preview.Position = UDim2.new(0, 300, 0, 60)
-Preview.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-Preview.Parent = MainFrame
-
-local PrevCorner = Instance.new("UICorner")
-PrevCorner.CornerRadius = UDim.new(0, 10)
-PrevCorner.Parent = Preview
-
-local DisplayImg = Instance.new("ImageLabel")
-DisplayImg.Size = UDim2.new(1, -20, 0, 170)
-DisplayImg.Position = UDim2.new(0, 10, 0, 10)
-DisplayImg.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-DisplayImg.Image = ""
-DisplayImg.ScaleType = Enum.ScaleType.Crop
-DisplayImg.Parent = Preview
-
-local ImgCorner = Instance.new("UICorner")
-ImgCorner.CornerRadius = UDim.new(0, 8)
-ImgCorner.Parent = DisplayImg
-
-local PlayBtn = Instance.new("TextButton")
-PlayBtn.Size = UDim2.new(1, -40, 0, 45)
-PlayBtn.Position = UDim2.new(0, 20, 1, -65)
-PlayBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 255)
-PlayBtn.Text = "EXECUTE"
-PlayBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-PlayBtn.Font = Enum.Font.GothamBold
-PlayBtn.TextSize = 16
-PlayBtn.Visible = false
-PlayBtn.Parent = Preview
-
-local PlayCorner = Instance.new("UICorner")
-PlayCorner.CornerRadius = UDim.new(0, 8)
-PlayCorner.Parent = PlayBtn
-
--- Data Table
-local Games = {
-    {Name = "Nuke Your City", ID = "113918641206373", Script = "https://raw.githubusercontent.com/robdipekks-cell/Nuke/refs/heads/main/Nukes"},
-    {Name = "Oil Empire", ID = "107095834793267", Script = "https://raw.githubusercontent.com/robdipekks-cell/Oil/refs/heads/main/Oiled"}
-}
-
-local currentScript = nil
-
-for _, data in pairs(Games) do
-    local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(1, -10, 0, 45)
-    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    Btn.Text = "  " .. data.Name
-    Btn.TextColor3 = Color3.fromRGB(180, 180, 180)
-    Btn.Font = Enum.Font.GothamSemibold
-    Btn.TextSize = 14
-    Btn.TextXAlignment = Enum.TextXAlignment.Left
-    Btn.Parent = ListFrame
-    
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
-
-    -- Hover Animations
-    Btn.MouseEnter:Connect(function()
-        TweenService:Create(Btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(40, 40, 50), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-    end)
-    Btn.MouseLeave:Connect(function()
-        if currentScript ~= data.Script then
-            TweenService:Create(Btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(30, 30, 35), TextColor3 = Color3.fromRGB(180, 180, 180)}):Play()
-        end
-    end)
-
-    Btn.MouseButton1Click:Connect(function()
-        currentScript = data.Script
-        DisplayImg.Image = "rbxthumb://type=Asset&id="..data.ID.."&w=420&h=420"
-        PlayBtn.Visible = true
-        -- Execution Logic inside PlayBtn below
-    end)
+-- ─────────────────────────────────────────
+--  HELPER: TWEEN SHORTCUT
+-- ─────────────────────────────────────────
+local function Tween(obj, t, props, style, dir)
+    style = style or Enum.EasingStyle.Quint
+    dir   = dir   or Enum.EasingDirection.Out
+    return TweenService:Create(obj, TweenInfo.new(t, style, dir), props)
 end
 
--- Close & Execute Logic
-PlayBtn.MouseButton1Click:Connect(function()
-    if currentScript then
-        -- Fade Out Animation
-        TweenService:Create(MainFrame, TweenInfo.new(0.4), {GroupTransparency = 1, Size = UDim2.new(0, 580, 0, 380)}):Play()
-        TweenService:Create(Blur, TweenInfo.new(0.4), {Size = 0}):Play()
-        
-        task.wait(0.4)
-        loadstring(game:HttpGet(currentScript))()
-        ScreenGui:Destroy()
-        Blur:Destroy()
+-- ─────────────────────────────────────────
+--  HELPER: MAKE INSTANCE
+-- ─────────────────────────────────────────
+local function New(cls, props, parent)
+    local i = Instance.new(cls)
+    for k, v in pairs(props) do i[k] = v end
+    if parent then i.Parent = parent end
+    return i
+end
+
+local function Corner(r, p) return New("UICorner", {CornerRadius = UDim.new(0, r)}, p) end
+local function Stroke(c, t, p) return New("UIStroke", {Color = c, Thickness = t, ApplyStrokeMode = Enum.ApplyStrokeMode.Border}, p) end
+local function Gradient(a, b, rot, p)
+    local g = New("UIGradient", {Rotation = rot or 90}, p)
+    g.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, a), ColorSequenceKeypoint.new(1, b)}
+    return g
+end
+
+-- ─────────────────────────────────────────
+--  COLORS
+-- ─────────────────────────────────────────
+local C = {
+    bg       = Color3.fromRGB(9,  10, 14),
+    panel    = Color3.fromRGB(14, 15, 20),
+    card     = Color3.fromRGB(18, 19, 26),
+    cardHov  = Color3.fromRGB(24, 25, 36),
+    accent   = Color3.fromRGB(88, 166, 255),
+    accent2  = Color3.fromRGB(140, 80, 255),
+    green    = Color3.fromRGB(60, 220, 140),
+    border   = Color3.fromRGB(40, 44, 60),
+    txt      = Color3.fromRGB(220, 225, 240),
+    txtDim   = Color3.fromRGB(100, 108, 130),
+    white    = Color3.fromRGB(255, 255, 255),
+    dark     = Color3.fromRGB(0, 0, 0),
+}
+
+-- ─────────────────────────────────────────
+--  OUTER GLOW CONTAINER
+-- ─────────────────────────────────────────
+local Glow = New("Frame", {
+    Size              = UDim2.fromOffset(700, 490),
+    Position          = UDim2.new(0.5, -350, 0.5, -245),
+    BackgroundColor3  = C.accent,
+    BackgroundTransparency = 0.88,
+    ZIndex            = 1,
+}, Gui)
+Corner(20, Glow)
+
+-- ─────────────────────────────────────────
+--  MAIN CANVAS (fade + scale in)
+-- ─────────────────────────────────────────
+local Main = New("CanvasGroup", {
+    Name              = "Main",
+    Size              = UDim2.fromOffset(680, 470),
+    Position          = UDim2.new(0.5, -340, 0.5, -235),
+    BackgroundColor3  = C.bg,
+    GroupTransparency = 1,
+    ZIndex            = 2,
+}, Gui)
+Corner(16, Main)
+Stroke(C.border, 1.2, Main)
+
+-- Animated gradient border shimmer overlay
+local BorderShimmer = New("Frame", {
+    Size             = UDim2.new(1, 0, 0, 2),
+    Position         = UDim2.new(0, 0, 0, 0),
+    BackgroundColor3 = C.white,
+    BackgroundTransparency = 0,
+    ZIndex           = 10,
+    ClipsDescendants = false,
+}, Main)
+Corner(2, BorderShimmer)
+local bsg = New("UIGradient", {Rotation = 0}, BorderShimmer)
+bsg.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0,   Color3.fromRGB(0,0,0)),
+    ColorSequenceKeypoint.new(0.3, C.accent),
+    ColorSequenceKeypoint.new(0.5, C.white),
+    ColorSequenceKeypoint.new(0.7, C.accent2),
+    ColorSequenceKeypoint.new(1,   Color3.fromRGB(0,0,0)),
+}
+bsg.Transparency = NumberSequence.new{
+    NumberSequenceKeypoint.new(0,   1),
+    NumberSequenceKeypoint.new(0.3, 0),
+    NumberSequenceKeypoint.new(0.5, 0),
+    NumberSequenceKeypoint.new(0.7, 0),
+    NumberSequenceKeypoint.new(1,   1),
+}
+
+-- Animate shimmer offset
+local shimmerOffset = 0
+RunService.Heartbeat:Connect(function(dt)
+    shimmerOffset = (shimmerOffset + dt * 0.18) % 1
+    bsg.Offset = Vector2.new(shimmerOffset * 2 - 1, 0)
+end)
+
+-- Fade-in entrance
+local entranceTween = Tween(Main, 0.7, {GroupTransparency = 0}, Enum.EasingStyle.Quint)
+entranceTween:Play()
+
+-- ─────────────────────────────────────────
+--  DRAGGING
+-- ─────────────────────────────────────────
+local dragging, dragStart, startPos
+Main.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging  = true
+        dragStart = inp.Position
+        startPos  = Main.Position
     end
+end)
+Main.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+UserInputService.InputChanged:Connect(function(inp)
+    if dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
+        local d = inp.Position - dragStart
+        Main.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + d.X,
+            startPos.Y.Scale, startPos.Y.Offset + d.Y
+        )
+        Glow.Position = UDim2.new(
+            Main.Position.X.Scale, Main.Position.X.Offset - 10,
+            Main.Position.Y.Scale, Main.Position.Y.Offset - 10
+        )
+    end
+end)
+
+-- ─────────────────────────────────────────
+--  LEFT SIDEBAR
+-- ─────────────────────────────────────────
+local Sidebar = New("Frame", {
+    Size             = UDim2.new(0, 210, 1, 0),
+    BackgroundColor3 = C.panel,
+    ZIndex           = 3,
+}, Main)
+Corner(16, Sidebar)
+-- Clip right corners to be square (overlapped by main)
+New("Frame", {
+    Size             = UDim2.new(0, 16, 1, 0),
+    Position         = UDim2.new(1, -16, 0, 0),
+    BackgroundColor3 = C.panel,
+    ZIndex           = 3,
+    BorderSizePixel  = 0,
+}, Sidebar)
+
+-- Logo area
+local LogoArea = New("Frame", {
+    Size             = UDim2.new(1, 0, 0, 70),
+    BackgroundTransparency = 1,
+    ZIndex           = 4,
+}, Sidebar)
+
+-- Glowing orb icon
+local Orb = New("Frame", {
+    Size             = UDim2.fromOffset(32, 32),
+    Position         = UDim2.new(0, 16, 0.5, -16),
+    BackgroundColor3 = C.accent,
+    ZIndex           = 5,
+}, LogoArea)
+Corner(50, Orb)
+New("UIGradient", {
+    Color    = ColorSequence.new(C.accent, C.accent2),
+    Rotation = 135,
+}, Orb)
+-- Pulse the orb
+local function pulseOrb()
+    while true do
+        Tween(Orb, 1.2, {BackgroundTransparency = 0.4}, Enum.EasingStyle.Sine):Play()
+        task.wait(1.2)
+        Tween(Orb, 1.2, {BackgroundTransparency = 0}, Enum.EasingStyle.Sine):Play()
+        task.wait(1.2)
+    end
+end
+task.spawn(pulseOrb)
+
+-- Inner orb dot
+New("Frame", {
+    Size             = UDim2.fromOffset(10, 10),
+    Position         = UDim2.new(0.5, -5, 0.5, -5),
+    BackgroundColor3 = C.white,
+    ZIndex           = 6,
+}, Orb)
+Corner(50, Orb:FindFirstChildWhichIsA("Frame"))
+
+New("TextLabel", {
+    Size             = UDim2.new(1, -60, 1, 0),
+    Position         = UDim2.new(0, 56, 0, 0),
+    BackgroundTransparency = 1,
+    Text             = "OORBITS",
+    TextColor3       = C.white,
+    TextSize         = 17,
+    Font             = Enum.Font.GothamBold,
+    TextXAlignment   = Enum.TextXAlignment.Left,
+    ZIndex           = 5,
+}, LogoArea)
+
+New("TextLabel", {
+    Size             = UDim2.new(1, -60, 0, 16),
+    Position         = UDim2.new(0, 56, 0, 30),
+    BackgroundTransparency = 1,
+    Text             = "SCRIPT HUB",
+    TextColor3       = C.accent,
+    TextSize         = 9,
+    Font             = Enum.Font.GothamBold,
+    TextXAlignment   = Enum.TextXAlignment.Left,
+    ZIndex           = 5,
+    TextScaled       = false,
+}, LogoArea)
+
+-- Divider
+local SideDivider = New("Frame", {
+    Size             = UDim2.new(1, -24, 0, 1),
+    Position         = UDim2.new(0, 12, 0, 72),
+    BackgroundColor3 = C.border,
+    ZIndex           = 4,
+}, Sidebar)
+Gradient(C.accent, C.accent2, 0, SideDivider)
+
+-- Search bar
+local SearchWrap = New("Frame", {
+    Size             = UDim2.new(1, -20, 0, 34),
+    Position         = UDim2.new(0, 10, 0, 82),
+    BackgroundColor3 = C.card,
+    ZIndex           = 4,
+}, Sidebar)
+Corner(8, SearchWrap)
+Stroke(C.border, 1, SearchWrap)
+
+New("TextLabel", {
+    Size             = UDim2.fromOffset(16, 34),
+    Position         = UDim2.new(0, 10, 0, 0),
+    BackgroundTransparency = 1,
+    Text             = "🔍",
+    TextSize         = 12,
+    ZIndex           = 5,
+}, SearchWrap)
+
+local SearchBox = New("TextBox", {
+    Size             = UDim2.new(1, -36, 1, 0),
+    Position         = UDim2.new(0, 30, 0, 0),
+    BackgroundTransparency = 1,
+    PlaceholderText  = "Search games...",
+    PlaceholderColor3 = C.txtDim,
+    Text             = "",
+    TextColor3       = C.txt,
+    Font             = Enum.Font.Gotham,
+    TextSize         = 13,
+    TextXAlignment   = Enum.TextXAlignment.Left,
+    ClearTextOnFocus = false,
+    ZIndex           = 5,
+}, SearchWrap)
+
+-- Game count badge
+local CountBadge = New("Frame", {
+    Size             = UDim2.fromOffset(40, 18),
+    Position         = UDim2.new(1, -50, 0, 122),
+    BackgroundColor3 = C.accent,
+    BackgroundTransparency = 0.75,
+    ZIndex           = 4,
+}, Sidebar)
+Corner(9, CountBadge)
+
+local CountLabel = New("TextLabel", {
+    Size             = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Text             = "0",
+    TextColor3       = C.accent,
+    TextSize         = 10,
+    Font             = Enum.Font.GothamBold,
+    ZIndex           = 5,
+}, CountBadge)
+
+New("TextLabel", {
+    Size             = UDim2.new(0, 60, 0, 18),
+    Position         = UDim2.new(0, 10, 0, 122),
+    BackgroundTransparency = 1,
+    Text             = "GAMES",
+    TextColor3       = C.txtDim,
+    TextSize         = 9,
+    Font             = Enum.Font.GothamBold,
+    TextXAlignment   = Enum.TextXAlignment.Left,
+    ZIndex           = 4,
+}, Sidebar)
+
+-- Script list
+local ListFrame = New("ScrollingFrame", {
+    Size                  = UDim2.new(1, -10, 1, -152),
+    Position              = UDim2.new(0, 5, 0, 148),
+    BackgroundTransparency= 1,
+    ScrollBarThickness    = 2,
+    ScrollBarImageColor3  = C.accent,
+    CanvasSize            = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize   = Enum.AutomaticSize.Y,
+    ZIndex                = 4,
+}, Sidebar)
+
+New("UIListLayout", {
+    Padding          = UDim.new(0, 5),
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+}, ListFrame)
+
+New("UIPadding", {
+    PaddingTop    = UDim.new(0, 4),
+    PaddingBottom = UDim.new(0, 8),
+}, ListFrame)
+
+-- ─────────────────────────────────────────
+--  RIGHT PANEL
+-- ─────────────────────────────────────────
+local RightPanel = New("Frame", {
+    Size             = UDim2.new(1, -218, 1, 0),
+    Position         = UDim2.new(0, 218, 0, 0),
+    BackgroundTransparency = 1,
+    ZIndex           = 3,
+}, Main)
+
+-- Top bar with title + close
+local TopBar = New("Frame", {
+    Size             = UDim2.new(1, 0, 0, 50),
+    BackgroundTransparency = 1,
+    ZIndex           = 4,
+}, RightPanel)
+
+New("TextLabel", {
+    Size             = UDim2.new(1, -50, 1, 0),
+    Position         = UDim2.new(0, 16, 0, 0),
+    BackgroundTransparency = 1,
+    Text             = "Select a game to preview",
+    TextColor3       = C.txtDim,
+    TextSize         = 13,
+    Font             = Enum.Font.Gotham,
+    TextXAlignment   = Enum.TextXAlignment.Left,
+    Name             = "Breadcrumb",
+    ZIndex           = 5,
+}, TopBar)
+
+-- Close button
+local CloseBtn = New("TextButton", {
+    Size             = UDim2.fromOffset(28, 28),
+    Position         = UDim2.new(1, -38, 0.5, -14),
+    BackgroundColor3 = Color3.fromRGB(200, 60, 60),
+    BackgroundTransparency = 0.3,
+    Text             = "✕",
+    TextColor3       = C.white,
+    TextSize         = 13,
+    Font             = Enum.Font.GothamBold,
+    ZIndex           = 5,
+}, TopBar)
+Corner(7, CloseBtn)
+
+CloseBtn.MouseEnter:Connect(function()
+    Tween(CloseBtn, 0.2, {BackgroundTransparency = 0, Size = UDim2.fromOffset(30, 30), Position = UDim2.new(1, -39, 0.5, -15)}):Play()
+end)
+CloseBtn.MouseLeave:Connect(function()
+    Tween(CloseBtn, 0.2, {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(28, 28), Position = UDim2.new(1, -38, 0.5, -14)}):Play()
+end)
+CloseBtn.MouseButton1Click:Connect(function()
+    Tween(Main, 0.4, {GroupTransparency = 1}, Enum.EasingStyle.Quint):Play()
+    Tween(Glow, 0.4, {BackgroundTransparency = 1}):Play()
+    Tween(Blur, 0.4, {Size = 0}):Play()
+    task.wait(0.4)
+    Gui:Destroy()
+    Blur:Destroy()
+end)
+
+-- Top divider
+local TopDivider = New("Frame", {
+    Size             = UDim2.new(1, -16, 0, 1),
+    Position         = UDim2.new(0, 8, 0, 50),
+    BackgroundColor3 = C.border,
+    ZIndex           = 4,
+}, RightPanel)
+
+-- ─────── PREVIEW CARD ───────
+local PreviewCard = New("Frame", {
+    Size             = UDim2.new(1, -24, 0, 200),
+    Position         = UDim2.new(0, 12, 0, 62),
+    BackgroundColor3 = C.card,
+    ZIndex           = 4,
+}, RightPanel)
+Corner(12, PreviewCard)
+Stroke(C.border, 1, PreviewCard)
+
+-- Image with shimmer loading effect
+local ImgContainer = New("Frame", {
+    Size             = UDim2.new(1, 0, 1, 0),
+    BackgroundColor3 = C.card,
+    ZIndex           = 4,
+    ClipsDescendants = true,
+}, PreviewCard)
+Corner(12, ImgContainer)
+
+local DisplayImg = New("ImageLabel", {
+    Size             = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Image            = "",
+    ScaleType        = Enum.ScaleType.Crop,
+    ImageTransparency = 1,
+    ZIndex           = 5,
+}, ImgContainer)
+
+-- Placeholder text on image
+local ImgPlaceholder = New("TextLabel", {
+    Size             = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Text             = "🎮  No game selected",
+    TextColor3       = C.txtDim,
+    TextSize         = 14,
+    Font             = Enum.Font.Gotham,
+    ZIndex           = 5,
+}, ImgContainer)
+
+-- Gradient overlay on image bottom
+local ImgOverlay = New("Frame", {
+    Size             = UDim2.new(1, 0, 0.5, 0),
+    Position         = UDim2.new(0, 0, 0.5, 0),
+    BackgroundColor3 = C.card,
+    BackgroundTransparency = 0,
+    ZIndex           = 6,
+}, ImgContainer)
+Corner(12, ImgOverlay)
+local ovg = New("UIGradient", {Rotation = 90}, ImgOverlay)
+ovg.Transparency = NumberSequence.new{
+    NumberSequenceKeypoint.new(0, 1),
+    NumberSequenceKeypoint.new(1, 0),
+}
+
+-- ─────── INFO SECTION ───────
+local InfoSection = New("Frame", {
+    Size             = UDim2.new(1, -24, 0, 70),
+    Position         = UDim2.new(0, 12, 0, 274),
+    BackgroundTransparency = 1,
+    ZIndex           = 4,
+}, RightPanel)
+
+local GameTitleLabel = New("TextLabel", {
+    Size             = UDim2.new(1, 0, 0, 28),
+    BackgroundTransparency = 1,
+    Text             = "—",
+    TextColor3       = C.white,
+    TextSize         = 20,
+    Font             = Enum.Font.GothamBold,
+    TextXAlignment   = Enum.TextXAlignment.Left,
+    ZIndex           = 5,
+}, InfoSection)
+
+local StatusDot = New("Frame", {
+    Size             = UDim2.fromOffset(7, 7),
+    Position         = UDim2.new(0, 0, 0, 36),
+    BackgroundColor3 = C.green,
+    ZIndex           = 5,
+}, InfoSection)
+Corner(50, StatusDot)
+
+New("TextLabel", {
+    Size             = UDim2.new(1, -20, 0, 18),
+    Position         = UDim2.new(0, 14, 0, 32),
+    BackgroundTransparency = 1,
+    Text             = "Ready to execute",
+    TextColor3       = C.txtDim,
+    TextSize         = 12,
+    Font             = Enum.Font.Gotham,
+    TextXAlignment   = Enum.TextXAlignment.Left,
+    Name             = "StatusLabel",
+    ZIndex           = 5,
+}, InfoSection)
+
+-- ─────── TAG BADGES ───────
+local TagFrame = New("Frame", {
+    Size             = UDim2.new(1, -24, 0, 24),
+    Position         = UDim2.new(0, 12, 0, 352),
+    BackgroundTransparency = 1,
+    ZIndex           = 4,
+}, RightPanel)
+
+New("UIListLayout", {
+    FillDirection    = Enum.FillDirection.Horizontal,
+    Padding          = UDim.new(0, 6),
+}, TagFrame)
+
+local function MakeTag(text, color)
+    local t = New("Frame", {
+        Size             = UDim2.fromOffset(0, 22),
+        AutomaticSize    = Enum.AutomaticSize.X,
+        BackgroundColor3 = color,
+        BackgroundTransparency = 0.8,
+        ZIndex           = 5,
+    }, TagFrame)
+    Corner(6, t)
+    New("UIPadding", {PaddingLeft=UDim.new(0,8), PaddingRight=UDim.new(0,8), PaddingTop=UDim.new(0,2), PaddingBottom=UDim.new(0,2)}, t)
+    New("TextLabel", {
+        Size             = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text             = text,
+        TextColor3       = color,
+        TextSize         = 10,
+        Font             = Enum.Font.GothamBold,
+        ZIndex           = 6,
+        AutomaticSize    = Enum.AutomaticSize.X,
+    }, t)
+    return t
+end
+
+MakeTag("FREE", C.green)
+MakeTag("UNDETECTED", C.accent)
+MakeTag("UPDATED", C.accent2)
+
+-- ─────── EXECUTE BUTTON ───────
+local ExecWrap = New("Frame", {
+    Size             = UDim2.new(1, -24, 0, 48),
+    Position         = UDim2.new(0, 12, 1, -62),
+    BackgroundColor3 = C.accent,
+    ZIndex           = 4,
+}, RightPanel)
+Corner(12, ExecWrap)
+
+-- Button gradient
+local execGrad = New("UIGradient", {
+    Color = ColorSequence.new(C.accent, C.accent2),
+    Rotation = 90,
+}, ExecWrap)
+
+-- Button glow
+local ExecGlow = New("Frame", {
+    Size             = UDim2.new(1, 20, 1, 20),
+    Position         = UDim2.new(0, -10, 0, -10),
+    BackgroundColor3 = C.accent,
+    BackgroundTransparency = 0.7,
+    ZIndex           = 3,
+}, ExecWrap)
+Corner(16, ExecGlow)
+
+local ExecBtn = New("TextButton", {
+    Size             = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Text             = "",
+    ZIndex           = 5,
+    Visible          = false,
+}, ExecWrap)
+
+-- Exec button inner layout
+local ExecInner = New("Frame", {
+    Size             = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    ZIndex           = 6,
+}, ExecBtn)
+New("UIListLayout", {
+    FillDirection    = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    VerticalAlignment   = Enum.VerticalAlignment.Center,
+    Padding          = UDim.new(0, 8),
+}, ExecInner)
+
+New("TextLabel", {
+    Size             = UDim2.fromOffset(20, 48),
+    BackgroundTransparency = 1,
+    Text             = "▶",
+    TextColor3       = C.white,
+    TextSize         = 16,
+    Font             = Enum.Font.GothamBold,
+    ZIndex           = 7,
+}, ExecInner)
+
+New("TextLabel", {
+    Size             = UDim2.fromOffset(120, 48),
+    BackgroundTransparency = 1,
+    Text             = "EXECUTE SCRIPT",
+    TextColor3       = C.white,
+    TextSize         = 15,
+    Font             = Enum.Font.GothamBold,
+    ZIndex           = 7,
+}, ExecInner)
+
+-- Default (no script selected) state
+local NoSelectLabel = New("TextLabel", {
+    Size             = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Text             = "Select a game first",
+    TextColor3       = Color3.fromRGB(255,255,255),
+    TextTransparency = 0.5,
+    TextSize         = 14,
+    Font             = Enum.Font.Gotham,
+    ZIndex           = 5,
+    Visible          = true,
+}, ExecWrap)
+
+ExecWrap.BackgroundTransparency = 0.5
+ExecGlow.BackgroundTransparency = 1
+
+
+-- Hover effects on execute
+ExecBtn.MouseEnter:Connect(function()
+    Tween(ExecWrap, 0.2, {BackgroundTransparency = 0}):Play()
+    Tween(ExecGlow, 0.3, {BackgroundTransparency = 0.6}):Play()
+    Tween(ExecWrap, 0.15, {Size = UDim2.new(1, -20, 0, 50), Position = UDim2.new(0, 14, 1, -63)}):Play()
+end)
+ExecBtn.MouseLeave:Connect(function()
+    Tween(ExecWrap, 0.2, {BackgroundTransparency = 0}):Play()
+    Tween(ExecGlow, 0.3, {BackgroundTransparency = 0.7}):Play()
+    Tween(ExecWrap, 0.15, {Size = UDim2.new(1, -24, 0, 48), Position = UDim2.new(0, 12, 1, -62)}):Play()
+end)
+
+-- ─────────────────────────────────────────
+--  GAME DATA
+-- ─────────────────────────────────────────
+local Games = {
+    {Name = "Nuke Your City",  ID = "113918641206373", Script = "https://raw.githubusercontent.com/robdipekks-cell/Nuke/refs/heads/main/Nukes"},
+    {Name = "Oil Empire",      ID = "107095834793267", Script = "https://raw.githubusercontent.com/robdipekks-cell/Oil/refs/heads/main/Oiled"},
+}
+
+-- ─────────────────────────────────────────
+--  STATE
+-- ─────────────────────────────────────────
+local currentScript  = nil
+local selectedButton = nil
+local allButtons     = {}
+
+CountLabel.Text = tostring(#Games)
+
+-- ─────────────────────────────────────────
+--  BUILD GAME BUTTONS
+-- ─────────────────────────────────────────
+local Breadcrumb = TopBar:FindFirstChild("Breadcrumb")
+
+for i, data in ipairs(Games) do
+    local Card = New("TextButton", {
+        Size             = UDim2.new(1, -10, 0, 48),
+        BackgroundColor3 = C.card,
+        Text             = "",
+        AutoButtonColor  = false,
+        ZIndex           = 5,
+    }, ListFrame)
+    Corner(10, Card)
+
+    -- Left accent bar (hidden by default)
+    local AccentBar = New("Frame", {
+        Size             = UDim2.fromOffset(3, 28),
+        Position         = UDim2.new(0, 6, 0.5, -14),
+        BackgroundColor3 = C.accent,
+        BackgroundTransparency = 1,
+        ZIndex           = 6,
+    }, Card)
+    Corner(4, AccentBar)
+
+    -- Game number badge
+    local NumBadge = New("Frame", {
+        Size             = UDim2.fromOffset(22, 22),
+        Position         = UDim2.new(0, 14, 0.5, -11),
+        BackgroundColor3 = C.border,
+        ZIndex           = 6,
+    }, Card)
+    Corner(6, NumBadge)
+    New("TextLabel", {
+        Size             = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text             = tostring(i),
+        TextColor3       = C.txtDim,
+        TextSize         = 10,
+        Font             = Enum.Font.GothamBold,
+        ZIndex           = 7,
+    }, NumBadge)
+
+    -- Game name
+    New("TextLabel", {
+        Size             = UDim2.new(1, -50, 1, 0),
+        Position         = UDim2.new(0, 44, 0, 0),
+        BackgroundTransparency = 1,
+        Text             = data.Name,
+        TextColor3       = C.txtDim,
+        TextSize         = 13,
+        Font             = Enum.Font.GothamSemibold,
+        TextXAlignment   = Enum.TextXAlignment.Left,
+        TextTruncate     = Enum.TextTruncate.AtEnd,
+        Name             = "Label",
+        ZIndex           = 6,
+    }, Card)
+
+    -- Arrow indicator
+    local Arrow = New("TextLabel", {
+        Size             = UDim2.fromOffset(20, 48),
+        Position         = UDim2.new(1, -22, 0, 0),
+        BackgroundTransparency = 1,
+        Text             = "›",
+        TextColor3       = C.txtDim,
+        TextSize         = 18,
+        Font             = Enum.Font.GothamBold,
+        TextTransparency = 1,
+        ZIndex           = 6,
+    }, Card)
+
+    table.insert(allButtons, {card = Card, data = data, accent = AccentBar, arrow = Arrow, numBadge = NumBadge})
+
+    local function selectCard()
+        -- Deselect old
+        if selectedButton then
+            local old = selectedButton
+            Tween(old.card,     0.25, {BackgroundColor3 = C.card}):Play()
+            Tween(old.accent,   0.25, {BackgroundTransparency = 1}):Play()
+            Tween(old.arrow,    0.25, {TextTransparency = 1}):Play()
+            Tween(old.numBadge, 0.25, {BackgroundColor3 = C.border}):Play()
+            old.card:FindFirstChild("Label").TextColor3 = C.txtDim
+        end
+
+        selectedButton = {card = Card, data = data, accent = AccentBar, arrow = Arrow, numBadge = NumBadge}
+
+        -- Highlight selected
+        Tween(Card,     0.25, {BackgroundColor3 = C.cardHov}):Play()
+        Tween(AccentBar,0.25, {BackgroundTransparency = 0}):Play()
+        Tween(Arrow,    0.25, {TextTransparency = 0}):Play()
+        Tween(NumBadge, 0.25, {BackgroundColor3 = C.accent}):Play()
+        Card:FindFirstChild("Label").TextColor3 = C.white
+
+        -- Update preview
+        currentScript = data.Script
+        if Breadcrumb then Breadcrumb.Text = "🎮  " .. data.Name end
+        GameTitleLabel.Text = data.Name
+
+        -- Animate image in
+        DisplayImg.ImageTransparency = 1
+        ImgPlaceholder.Visible = false
+        DisplayImg.Image = "rbxthumb://type=Asset&id=" .. data.ID .. "&w=420&h=420"
+        Tween(DisplayImg, 0.5, {ImageTransparency = 0}, Enum.EasingStyle.Quint):Play()
+
+        -- Show exec button
+        ExecBtn.Visible         = true
+        NoSelectLabel.Visible   = false
+        ExecWrap.BackgroundTransparency = 0
+        Tween(ExecGlow, 0.4, {BackgroundTransparency = 0.7}):Play()
+    end
+
+    Card.MouseEnter:Connect(function()
+        if selectedButton and selectedButton.card == Card then return end
+        Tween(Card, 0.2, {BackgroundColor3 = Color3.fromRGB(22, 23, 32)}):Play()
+        Tween(Arrow, 0.2, {TextTransparency = 0.4}):Play()
+    end)
+    Card.MouseLeave:Connect(function()
+        if selectedButton and selectedButton.card == Card then return end
+        Tween(Card, 0.2, {BackgroundColor3 = C.card}):Play()
+        Tween(Arrow, 0.2, {TextTransparency = 1}):Play()
+    end)
+    Card.MouseButton1Click:Connect(selectCard)
+end
+
+-- ─────────────────────────────────────────
+--  SEARCH FILTER
+-- ─────────────────────────────────────────
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local q = SearchBox.Text:lower()
+    for _, entry in ipairs(allButtons) do
+        entry.card.Visible = entry.data.Name:lower():find(q, 1, true) ~= nil
+    end
+end)
+
+-- ─────────────────────────────────────────
+--  EXECUTE LOGIC
+-- ─────────────────────────────────────────
+ExecBtn.MouseButton1Click:Connect(function()
+    if not currentScript then return end
+
+    -- Loading state
+    ExecBtn.Visible = false
+    NoSelectLabel.Text = "⏳  Loading..."
+    NoSelectLabel.Visible = true
+    NoSelectLabel.TextTransparency = 0
+
+    -- Flash glow
+    Tween(ExecGlow, 0.1, {BackgroundTransparency = 0.2}):Play()
+    task.wait(0.15)
+    Tween(ExecGlow, 0.3, {BackgroundTransparency = 0.9}):Play()
+
+    task.wait(0.3)
+
+    -- Collapse & close
+    Tween(Main, 0.45, {GroupTransparency = 1, Size = UDim2.fromOffset(660, 450)}, Enum.EasingStyle.Back, Enum.EasingDirection.In):Play()
+    Tween(Glow, 0.45, {BackgroundTransparency = 1}):Play()
+    Tween(Blur, 0.45, {Size = 0}):Play()
+
+    task.wait(0.5)
+    loadstring(game:HttpGet(currentScript))()
+    Gui:Destroy()
+    Blur:Destroy()
+end)
+
+-- ─────────────────────────────────────────
+--  NOTIFICATION TOAST (top-right)
+-- ─────────────────────────────────────────
+local function ShowToast(msg, color)
+    color = color or C.accent
+    local Toast = New("Frame", {
+        Size             = UDim2.fromOffset(240, 42),
+        Position         = UDim2.new(1, 260, 0, 20),
+        BackgroundColor3 = C.card,
+        ZIndex           = 20,
+    }, Main)
+    Corner(10, Toast)
+    Stroke(color, 1.2, Toast)
+
+    New("Frame", {
+        Size             = UDim2.fromOffset(3, 42),
+        BackgroundColor3 = color,
+        ZIndex           = 21,
+    }, Toast)
+    Corner(10, Toast:FindFirstChildWhichIsA("Frame"))
+
+    New("TextLabel", {
+        Size             = UDim2.new(1, -16, 1, 0),
+        Position         = UDim2.new(0, 12, 0, 0),
+        BackgroundTransparency = 1,
+        Text             = msg,
+        TextColor3       = C.txt,
+        TextSize         = 12,
+        Font             = Enum.Font.Gotham,
+        TextXAlignment   = Enum.TextXAlignment.Left,
+        ZIndex           = 22,
+        TextWrapped      = true,
+    }, Toast)
+
+    -- Slide in
+    Tween(Toast, 0.4, {Position = UDim2.new(1, -252, 0, 20)}, Enum.EasingStyle.Back):Play()
+    task.wait(2.5)
+    Tween(Toast, 0.35, {Position = UDim2.new(1, 260, 0, 20)}, Enum.EasingStyle.Quint):Play()
+    task.wait(0.4)
+    Toast:Destroy()
+end
+
+task.delay(0.8, function()
+    ShowToast("✦  Hub loaded — " .. #Games .. " games available", C.accent)
 end)
