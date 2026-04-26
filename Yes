@@ -647,6 +647,7 @@ end)
 local Games = {
     {Name = "Nuke Your City",  ID = "113918641206373", Script = "https://raw.githubusercontent.com/robdipekks-cell/Nuke/refs/heads/main/Nukes"},
     {Name = "Oil Empire",      ID = "107095834793267", Script = "https://raw.githubusercontent.com/robdipekks-cell/Oil/refs/heads/main/Oiled"},
+    {Name = "Be A Youtuber",      ID = "120564326011184", Script = "https://raw.githubusercontent.com/robdipekks-cell/Youtube/refs/heads/main/Ye"},
 }
 
 -- ─────────────────────────────────────────
