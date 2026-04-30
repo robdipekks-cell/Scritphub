@@ -650,7 +650,7 @@ local Games = {
     {Name = "Be A Youtuber",      ID = "120564326011184", Script = "https://raw.githubusercontent.com/robdipekks-cell/Youtube/refs/heads/main/Ye"},
     {Name = "Dont Get Caught For Hackers",      ID = "91350524990442", Script = "https://raw.githubusercontent.com/robdipekks-cell/As/refs/heads/main/FluentGUI%20(4).lua"},
     {Name = "Be A Streamer",  ID = "119126689474503", Script = "https://raw.githubusercontent.com/robdipekks-cell/Be-a-streamer/refs/heads/main/A"},
-    {Name = "Fireball Training",  ID = "129195078205390", Script = "https://raw.githubusercontent.com/robdipekks-cell/Be-a-streamer/refs/heads/main/A"},
+    {Name = "Fireball Training",  ID = "129195078205390", Script = "https://raw.githubusercontent.com/robdipekks-cell/Fireball-/refs/heads/main/A"},
 }
 
 -- ─────────────────────────────────────────
