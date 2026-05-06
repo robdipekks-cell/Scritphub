@@ -817,6 +817,7 @@ local Games = {
     {Name = "Build A Store",               ID = "123260699475631", Script = "https://raw.githubusercontent.com/robdipekks-cell/Build-store/refs/heads/main/A"},
     {Name = "Guess The Slapper",               ID = "106683702021527", Script = "https://raw.githubusercontent.com/robdipekks-cell/slap/refs/heads/main/A"},
     {Name = "Field Trip Z",               ID = "4954096313", Script = "https://raw.githubusercontent.com/robdipekks-cell/Field/refs/heads/main/A"},
+    {Name = "Nuke For Brainrot",               ID = "109908567838703", Script = "https://raw.githubusercontent.com/robdipekks-cell/Nukeabrainror/refs/heads/main/AutoFarm%20(6).lua"},
 }
 
 local currentScript  = nil
