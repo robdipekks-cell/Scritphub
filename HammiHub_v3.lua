@@ -762,6 +762,7 @@ end)
 -- ─────────────────────────────────────────────
 local Games = {
     {Name = "Find Who Slapped",         ID = "72167803024670", Script = "https://raw.githubusercontent.com/jdiejdwkor-source/Findtheslape/refs/heads/main/output.lua"},
+    {Name = "Build Bridge To Brainrots",         ID = "88207898227053", Script = "https://raw.githubusercontent.com/robdipekks-cell/Woodbrainror/refs/heads/main/A"},
 }
 
 CountLabel.Text = #Games .. " games"
