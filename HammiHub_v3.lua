@@ -677,7 +677,7 @@ Brd(C.gold, 1.8, ToggleWrap)
 local ToggleImg = New("ImageButton", {
     Size             = UDim2.new(1, 0, 1, 0),
     BackgroundTransparency = 1,
-    Image            = "rbxassetid://7229684137",
+    Image            = "rbxassetid://2882294824",
     ScaleType        = Enum.ScaleType.Fit,
     ZIndex           = 100,
     AutoButtonColor  = false,
