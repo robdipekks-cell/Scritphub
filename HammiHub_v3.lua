@@ -231,7 +231,7 @@ New("TextLabel", {
     BackgroundTransparency = 1,
     Text             = "SCRIPT HUB",
     TextColor3       = C.gold,
-    TextSize         = 10,
+    TextSize         = 11,
     Font             = Enum.Font.GothamBold,
     TextXAlignment   = Enum.TextXAlignment.Left,
     ZIndex           = 7,
@@ -252,7 +252,7 @@ New("TextLabel", {
     Position         = UDim2.new(0, 8, 0, 0),
     BackgroundTransparency = 1,
     Text             = "🔍",
-    TextSize         = 11,
+    TextSize         = 9,
     TextColor3       = C.txtDim,
     ZIndex           = 8,
 }, SearchWrap)
@@ -677,7 +677,7 @@ Brd(C.gold, 1.8, ToggleWrap)
 local ToggleImg = New("ImageButton", {
     Size             = UDim2.new(1, 0, 1, 0),
     BackgroundTransparency = 1,
-    Image            = "rbxassetid://2881948982",
+    Image            = "rbxassetid://7229684137",
     ScaleType        = Enum.ScaleType.Fit,
     ZIndex           = 100,
     AutoButtonColor  = false,
