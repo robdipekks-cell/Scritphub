@@ -674,11 +674,13 @@ Rnd(50, ToggleWrap)
 Brd(C.gold, 1.8, ToggleWrap)
 
 -- custom image on the toggle
-local ToggleImg = New("ImageButton", {
+local ToggleImg = New("TextButton", {
     Size             = UDim2.new(1, 0, 1, 0),
     BackgroundTransparency = 1,
-    Image            = "rbxassetid://2882294824",
-    ScaleType        = Enum.ScaleType.Fit,
+    Text             = "🐹",
+    Font             = Enum.Font.SourceSansBold,
+    TextSize         = 18,
+    TextColor3       = Color3.fromRGB(101, 67, 33), 
     ZIndex           = 100,
     AutoButtonColor  = false,
 }, ToggleWrap)
