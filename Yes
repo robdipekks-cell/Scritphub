@@ -821,6 +821,7 @@ local Games = {
     {Name = "Nuke For Brainrot",               ID = "109908567838703", Script = "https://raw.githubusercontent.com/robdipekks-cell/Nukeabrainror/refs/heads/main/AutoFarm%20(6).lua"},
     {Name = "Be A Lucky Block For Anime",               ID = "86264517332527", Script = "https://raw.githubusercontent.com/robdipekks-cell/Be-a-lucky/refs/heads/main/A"},
     {Name = "Be Flash For Brainrots",               ID = "136066387156306", Script = "https://raw.githubusercontent.com/robdipekks-cell/Flash-brainrot/refs/heads/main/A"},
+    {Name = "Be A Thief",               ID = "111193035915763", Script = "https://raw.githubusercontent.com/robdipekks-cell/Wspmynigga/refs/heads/main/A"},
 }
 
 local currentScript  = nil
