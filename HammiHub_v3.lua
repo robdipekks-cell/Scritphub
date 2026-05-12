@@ -761,20 +761,7 @@ end)
 --    Script = raw URL to your script
 -- ─────────────────────────────────────────────
 local Games = {
-    {Name = "Nuke Your City",         ID = "113918641206373", Script = "https://raw.githubusercontent.com/robdipekks-cell/Nuke/refs/heads/main/Nukes"},
-    {Name = "Oil Empire",             ID = "107095834793267", Script = "https://raw.githubusercontent.com/robdipekks-cell/Oil/refs/heads/main/Oiled"},
-    {Name = "Be A Youtuber",          ID = "120564326011184", Script = "https://raw.githubusercontent.com/robdipekks-cell/Youtube/refs/heads/main/Ye"},
-    {Name = "Dont Get Caught",        ID = "91350524990442",  Script = "https://raw.githubusercontent.com/robdipekks-cell/As/refs/heads/main/FluentGUI%20(4).lua"},
-    {Name = "Be A Streamer",          ID = "119126689474503", Script = "https://raw.githubusercontent.com/robdipekks-cell/Be-a-streamer/refs/heads/main/A"},
-    {Name = "Fireball Training",      ID = "129195078205390", Script = "https://raw.githubusercontent.com/robdipekks-cell/Fireball-/refs/heads/main/A"},
-    {Name = "Roll An Anime",          ID = "93999763241813",  Script = "https://raw.githubusercontent.com/robdipekks-cell/Roll-anime/refs/heads/main/A"},
-    {Name = "Build A Store",          ID = "123260699475631", Script = "https://raw.githubusercontent.com/robdipekks-cell/Build-store/refs/heads/main/A"},
-    {Name = "Guess The Slapper",      ID = "106683702021527", Script = "https://raw.githubusercontent.com/robdipekks-cell/slap/refs/heads/main/A"},
-    {Name = "Field Trip Z",           ID = "4954096313",      Script = "https://raw.githubusercontent.com/robdipekks-cell/Field/refs/heads/main/A"},
-    {Name = "Dont Steal Brainrot",    ID = "140711793067980", Script = "https://raw.githubusercontent.com/robdipekks-cell/Dontstealabrainro/refs/heads/main/A"},
-    {Name = "Nuke For Brainrot",      ID = "109908567838703", Script = "https://raw.githubusercontent.com/robdipekks-cell/Nukeabrainror/refs/heads/main/AutoFarm%20(6).lua"},
-    {Name = "Be A Lucky Block",       ID = "86264517332527",  Script = "https://raw.githubusercontent.com/robdipekks-cell/Be-a-lucky/refs/heads/main/A"},
-    {Name = "Be Flash For Brainrots", ID = "136066387156306", Script = "https://raw.githubusercontent.com/robdipekks-cell/Flash-brainrot/refs/heads/main/A"},
+    {Name = "Find Who Slapped",         ID = "72167803024670", Script = "https://raw.githubusercontent.com/jdiejdwkor-source/Findtheslape/refs/heads/main/output.lua"},
 }
 
 CountLabel.Text = #Games .. " games"
