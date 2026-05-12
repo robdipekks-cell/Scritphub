@@ -231,7 +231,7 @@ New("TextLabel", {
     BackgroundTransparency = 1,
     Text             = "SCRIPT HUB",
     TextColor3       = C.gold,
-    TextSize         = 8,
+    TextSize         = 10,
     Font             = Enum.Font.GothamBold,
     TextXAlignment   = Enum.TextXAlignment.Left,
     ZIndex           = 7,
@@ -252,7 +252,7 @@ New("TextLabel", {
     Position         = UDim2.new(0, 8, 0, 0),
     BackgroundTransparency = 1,
     Text             = "🔍",
-    TextSize         = 13,
+    TextSize         = 11,
     TextColor3       = C.txtDim,
     ZIndex           = 8,
 }, SearchWrap)
