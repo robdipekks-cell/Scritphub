@@ -80,17 +80,17 @@ local function Brdr(c,t,p) return N("UIStroke",{Color=c,Thickness=t,ApplyStrokeM
 --  PALETTE  –  Charcoal + Electric Lime
 -- ─────────────────────────────────────────────
 local C = {
-    bg      = Color3.fromRGB(13, 14, 17),
-    surface = Color3.fromRGB(19, 21, 26),
-    card    = Color3.fromRGB(24, 27, 34),
-    cardSel = Color3.fromRGB(30, 35, 44),
-    lime    = Color3.fromRGB(163, 230,  53),   -- electric lime  (primary)
-    lime2   = Color3.fromRGB( 74, 222, 128),   -- emerald green  (secondary)
-    red     = Color3.fromRGB(239,  68,  68),
-    amber   = Color3.fromRGB(251, 191,  36),
-    border  = Color3.fromRGB( 36,  40,  52),
-    txt     = Color3.fromRGB(226, 232, 240),
-    txtDim  = Color3.fromRGB( 99, 110, 135),
+    bg      = Color3.fromRGB(28, 22, 19),      -- dark roast (background)
+    surface = Color3.fromRGB(38, 30, 25),      -- espresso (surface)
+    card    = Color3.fromRGB(48, 38, 32),      -- mocha (cards)
+    cardSel = Color3.fromRGB(60, 48, 40),      -- lighter wood (selected card)
+    lime    = Color3.fromRGB(212, 163, 115),   -- warm caramel (primary accent)
+    lime2   = Color3.fromRGB(233, 196, 150),   -- light beige/tan (secondary accent)
+    red     = Color3.fromRGB(220, 70, 70),     -- softer brick red
+    amber   = Color3.fromRGB(230, 160, 50),    -- warm golden amber
+    border  = Color3.fromRGB(75, 60, 50),      -- dark wood border
+    txt     = Color3.fromRGB(240, 230, 215),   -- warm cream text
+    txtDim  = Color3.fromRGB(165, 145, 130),   -- dimmed beige text
     white   = Color3.fromRGB(255, 255, 255),
 }
 
