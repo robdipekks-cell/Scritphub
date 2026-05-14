@@ -823,6 +823,7 @@ local Games = {
     {Name = "Be Flash For Brainrots",               ID = "136066387156306", Script = "https://raw.githubusercontent.com/robdipekks-cell/Flash-brainrot/refs/heads/main/A"},
     {Name = "Be A Thief",               ID = "111193035915763", Script = "https://raw.githubusercontent.com/robdipekks-cell/Wspmynigga/refs/heads/main/A"},
     {Name = "Eat Jelly For Brainrots",               ID = "96169782836983", Script = "https://raw.githubusercontent.com/robdipekks-cell/Scritphub/refs/heads/main/Ajell"},
+    {Name = "Escape Rain For Lucky Blocks",               ID = "74951754415707", Script = "https://raw.githubusercontent.com/robdipekks-cell/Scritphub/refs/heads/main/Rain"},
 }
 
 local currentScript  = nil
