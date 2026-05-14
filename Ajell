@@ -168,7 +168,7 @@ local function runAutoFarm()
                     and model.Mesh:FindFirstChild("ProximityPrompt")
                 if prompt then
                     pcall(fireproximityprompt, prompt)
-                    task.wait(0.2)
+                    task.wait(0.5)
                 end
 
                 farmedAny = true
