@@ -179,11 +179,11 @@ local function runAutoFarm()
                     if plotCF then tpTo(plotCF, 10) end
                 end
 
-                task.wait(0.1)
+                task.wait(0.3)
             end
         end
 
-        if not farmedAny then task.wait(0.1) end
+        if not farmedAny then task.wait(0.5) end
     end
 end
 
