@@ -1,4 +1,4 @@
--- // Fluent GUI - Auto Farm
+-- // Fluent GUI - Eat Jelly For Brainrots
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -7,6 +7,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Players     = game:GetService("Players")
 local RepStorage  = game:GetService("ReplicatedStorage")
+local RunService  = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 -- ============================================================
@@ -32,10 +33,9 @@ local function getCF(obj)
     return nil
 end
 
--- Find the player's plot by Owner attribute matching UserId
 local function getMyPlot()
     local plots = workspace:FindFirstChild("Plots")
-    if not plots then return nil end
+    if not plots then return nil, nil end
     for i = 1, 10 do
         local plot = plots:FindFirstChild(tostring(i))
         if plot then
@@ -46,6 +46,41 @@ local function getMyPlot()
         end
     end
     return nil, nil
+end
+
+-- ============================================================
+-- // Noclip
+-- ============================================================
+local noclipEnabled    = false
+local noclipConnection = nil
+
+local function enableNoclip()
+    if noclipConnection then return end
+    noclipConnection = RunService.Stepped:Connect(function()
+        if noclipEnabled and LocalPlayer.Character then
+            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end)
+end
+
+local function disableNoclip()
+    noclipEnabled = false
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
+    -- Restore collision
+    if LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
 end
 
 -- ============================================================
@@ -87,7 +122,7 @@ local Window = Fluent:CreateWindow({
 
 local Tabs = {
     Main     = Window:AddTab({ Title = "Main",     Icon = "home"          }),
-    Collect  = Window:AddTab({ Title = "Collect",  Icon = "coins"       }),
+    Collect  = Window:AddTab({ Title = "Collect",  Icon = "coins"         }),
     Upgrades = Window:AddTab({ Title = "Upgrades", Icon = "trending-up"   }),
     Shop     = Window:AddTab({ Title = "Shop",     Icon = "shopping-cart" }),
     Spoons   = Window:AddTab({ Title = "Spoons",   Icon = "star"          }),
@@ -101,7 +136,7 @@ local autoFarm          = false
 local selectedRarities  = {}
 local selectedMutations = {}
 
-Tabs.Main:AddParagraph({ Title = "Auto Farm", Content = "Select rarities and mutations then enable the toggle." })
+Tabs.Main:AddParagraph({ Title = "Auto Farm", Content = "Select rarities and mutations then enable the toggle. Noclip auto-enables while farming." })
 
 Tabs.Main:AddDropdown("RarityDropdown", {
     Title       = "Rarity",
@@ -142,6 +177,9 @@ local function mutationMatches(model)
 end
 
 local function runAutoFarm()
+    noclipEnabled = true
+    enableNoclip()
+
     while autoFarm do
         if #selectedRarities == 0 then
             Fluent:Notify({ Title = "Auto Farm", Content = "Select at least one Rarity!", Duration = 3 })
@@ -185,11 +223,13 @@ local function runAutoFarm()
 
         if not farmedAny then task.wait(0.5) end
     end
+
+    disableNoclip()
 end
 
 Tabs.Main:AddToggle("ToggleAutoFarm", {
     Title       = "Auto Farm",
-    Description = "TPs to matching brainrots.",
+    Description = "Farms.",
     Default     = false,
     Callback    = function(val)
         autoFarm = val
@@ -202,6 +242,8 @@ Tabs.Main:AddToggle("ToggleAutoFarm", {
             task.spawn(runAutoFarm)
             Fluent:Notify({ Title = "Auto Farm", Content = "Started!", Duration = 3 })
         else
+            autoFarm = false
+            disableNoclip()
             Fluent:Notify({ Title = "Auto Farm", Content = "Stopped.", Duration = 3 })
         end
     end,
@@ -232,7 +274,7 @@ local function runAutoCollect()
 
             local cf = getCF(moneyCollect)
             if cf then
-                tpTo(cf, 0) -- 15 studs below
+                tpTo(cf, 5)
                 task.wait(0.3)
             end
         end
@@ -243,7 +285,7 @@ end
 
 Tabs.Collect:AddToggle("ToggleAutoCollect", {
     Title       = "Auto Collect",
-    Description = "Collects money from ur plot.",
+    Description = "Collects all money.",
     Default     = false,
     Callback    = function(val)
         autoCollect = val
@@ -261,7 +303,7 @@ Tabs.Collect:AddToggle("ToggleAutoCollect", {
 -- ============================================================
 local autoUpgrade = false
 
-Tabs.Upgrades:AddParagraph({ Title = "Auto Upgrade", Content = "Upgrades all brainrot in ur plot." })
+Tabs.Upgrades:AddParagraph({ Title = "Auto Upgrade", Content = "Upgrades all brainrot in your plot." })
 
 local function runAutoUpgrade()
     while autoUpgrade do
@@ -309,14 +351,14 @@ Tabs.Upgrades:AddToggle("ToggleAutoUpgrade", {
 -- ============================================================
 local BuyUpgrade = RepStorage:WaitForChild("UpgradeEvents"):WaitForChild("BuyUpgrade")
 
-local autoDamage    = false
-local autoSpeed     = false
-local autoCarry     = false
-local damageAmount  = 1
-local speedAmount   = 1
-local carryAmount   = 1
+local autoDamage   = false
+local autoSpeed    = false
+local autoCarry    = false
+local damageAmount = 1
+local speedAmount  = 1
+local carryAmount  = 1
 
-Tabs.Shop:AddParagraph({ Title = "Shop", Content = "Auto buy upgrades. Set amount in the textbox then toggle." })
+Tabs.Shop:AddParagraph({ Title = "Shop", Content = "Auto buy upgrades. Set amount then toggle." })
 
 -- DAMAGE
 Tabs.Shop:AddInput("DamageInput", {
@@ -325,9 +367,7 @@ Tabs.Shop:AddInput("DamageInput", {
     Default     = "1",
     Numeric     = true,
     Finished    = false,
-    Callback    = function(val)
-        damageAmount = tonumber(val) or 1
-    end,
+    Callback    = function(val) damageAmount = tonumber(val) or 1 end,
 })
 
 Tabs.Shop:AddToggle("ToggleAutoDamage", {
@@ -361,9 +401,7 @@ Tabs.Shop:AddInput("SpeedInput", {
     Default     = "1",
     Numeric     = true,
     Finished    = false,
-    Callback    = function(val)
-        speedAmount = tonumber(val) or 1
-    end,
+    Callback    = function(val) speedAmount = tonumber(val) or 1 end,
 })
 
 Tabs.Shop:AddToggle("ToggleAutoSpeed", {
@@ -397,9 +435,7 @@ Tabs.Shop:AddInput("CarryInput", {
     Default     = "1",
     Numeric     = true,
     Finished    = false,
-    Callback    = function(val)
-        carryAmount = tonumber(val) or 1
-    end,
+    Callback    = function(val) carryAmount = tonumber(val) or 1 end,
 })
 
 Tabs.Shop:AddToggle("ToggleAutoCarry", {
@@ -429,8 +465,8 @@ Tabs.Shop:AddToggle("ToggleAutoCarry", {
 -- ============================================================
 -- // SPOONS TAB
 -- ============================================================
-local SpoonEvent   = RepStorage:WaitForChild("SpoonEvent")
-local autoBuySpoon = false
+local SpoonEvent      = RepStorage:WaitForChild("SpoonEvent")
+local autoBuySpoon    = false
 local selectedSpoonValue = 2
 
 Tabs.Spoons:AddParagraph({ Title = "Spoons", Content = "Select a spoon and toggle to auto buy." })
@@ -480,7 +516,7 @@ SaveManager:LoadAutoloadConfig()
 Window:SelectTab(1)
 
 Fluent:Notify({
-    Title    = "Auto Farm Loaded",
+    Title    = "Eat Jelly For Brainrots Loaded",
     Content  = "RCtrl to minimize",
     Duration = 5,
 })
