@@ -1,0 +1,432 @@
+-- Load Fluent Library
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Build A Ring Farm",
+    SubTitle = "by Oorbits",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Farm     = Window:AddTab({ Title = "Farm",     Icon = "sprout"    }),
+    Place    = Window:AddTab({ Title = "Place",    Icon = "shovel"     }),
+    Unlock   = Window:AddTab({ Title = "Unlock",   Icon = "key" }),
+    Upgrades = Window:AddTab({ Title = "Upgrades", Icon = "star"  }),
+    Gears    = Window:AddTab({ Title = "Gears",    Icon = "hammer"      }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings"  }),
+}
+
+-- Services
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer       = Players.LocalPlayer
+
+-- Remotes
+local Remotes                = ReplicatedStorage:WaitForChild("Remotes")
+local RollSeeds              = Remotes:WaitForChild("RollSeeds")
+local BuySeed                = Remotes:WaitForChild("BuySeed")
+local UnlockPlot             = Remotes:WaitForChild("UnlockPlot")
+local PlantSeed              = Remotes:WaitForChild("PlantSeed")
+local UpgradeFarm            = Remotes:WaitForChild("UpgradeFarm")
+local UpgradeSeedLuck        = Remotes:WaitForChild("UpgradeSeedLuck")
+local UpgradeSeedRolls       = Remotes:WaitForChild("UpgradeSeedRolls")
+local PlotUpgradeTransaction = Remotes:WaitForChild("PlotUpgradeTransaction")
+local SellCrates             = Remotes:WaitForChild("SellCrates")
+local UpgradePlant           = Remotes:WaitForChild("UpgradePlant")
+local ClaimPlaytimeReward    = Remotes:WaitForChild("ClaimPlaytimeReward")
+local GearTransaction        = Remotes:WaitForChild("Gear"):WaitForChild("Transaction")
+
+-- State
+local AutoBuyRoll        = false
+local AutoSellCrate      = false
+local AutoUpgradePlants  = false
+local AutoUnlock         = false
+local AutoPlace          = false
+local AutoCollectRewards = false
+local SelectedRarities   = {}
+
+-- Upgrades State
+local AutoExpandFarm     = false
+local AutoSeedLuck       = false
+local AutoSeedRolls      = false
+local AutoSawYield       = false
+local AutoSprinklerPower = false
+local AutoSawRange       = false
+local AutoSprinklerRange = false
+
+-- Gears State
+local AutoNormalFertilizer = false
+local AutoStrongFertilizer = false
+local AutoSuperFertilizer  = false
+local AutoAcidSpray        = false
+local AutoWetSpray         = false
+local AutoFrozenSpray      = false
+local AutoVoidSpray        = false
+local AutoRadioactiveSpray = false
+local AutoRainbowSpray     = false
+
+-- =====================
+--   HELPER FUNCTIONS
+-- =====================
+
+local function getOwnedPlot()
+    local plots = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Plots")
+    if not plots then return nil end
+    for _, plotFolder in ipairs(plots:GetChildren()) do
+        local ownerSign = plotFolder:FindFirstChild("OwnerSign")
+        if ownerSign and ownerSign:FindFirstChild("Face") and ownerSign.Face:FindFirstChild("SurfaceGui") then
+            if ownerSign.Face.SurfaceGui.TextLabel.Text == LocalPlayer.Name then
+                return plotFolder
+            end
+        end
+    end
+    return nil
+end
+
+local function isDirtOccupied(dirt)
+    for _, child in ipairs(dirt:GetChildren()) do
+        if child:IsA("Model") then
+            return true
+        end
+    end
+    return false
+end
+
+local function teleportToPart(part)
+    local character = LocalPlayer.Character
+    if not character or not part then return end
+    local cf
+    if part:IsA("BasePart") then
+        cf = part.CFrame
+    elseif part:IsA("Model") then
+        cf = part:GetPivot()
+    else
+        local bp = part:FindFirstChildWhichIsA("BasePart")
+        if bp then cf = bp.CFrame end
+    end
+    if cf then
+        character:PivotTo(cf * CFrame.new(0, 4, 0))
+        task.wait(0.15)
+    end
+end
+
+-- =====================
+--       FARM TAB
+-- =====================
+
+Tabs.Farm:AddParagraph({
+    Title   = "Auto Buy/Roll",
+    Content = "Rolls seeds and buys if rarity matches. Will NOT re-roll while a matching rarity seed is still visible — waits for it to disappear first.",
+})
+
+local RarityDropdown = Tabs.Farm:AddDropdown("RarityFilter", {
+    Title       = "Rarity Filter",
+    Description = "Select rarities to auto-buy",
+    Values      = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Secret", "Prismatic", "Divine"},
+    Multi       = true,
+    Default     = {},
+})
+RarityDropdown:OnChanged(function(value) SelectedRarities = value end)
+
+Tabs.Farm:AddToggle("AutoBuyRollToggle", {
+    Title       = "Auto Buy/Roll",
+    Description = "Rolls seeds and buys Matched Rarity.",
+    Default     = false,
+}):OnChanged(function(state) AutoBuyRoll = state end)
+
+Tabs.Farm:AddToggle("SellCrateToggle", {
+    Title       = "Auto Sell Crate",
+    Description = "Teleports to your crates and auto-sells",
+    Default     = false,
+}):OnChanged(function(state) AutoSellCrate = state end)
+
+Tabs.Farm:AddToggle("UpgradePlantsToggle", {
+    Title       = "Auto Upgrade Plants",
+    Description = "Automatically upgrades all plants in your plots",
+    Default     = false,
+}):OnChanged(function(state) AutoUpgradePlants = state end)
+
+Tabs.Farm:AddToggle("AutoCollectRewardsToggle", {
+    Title       = "Auto Collect Rewards",
+    Description = "Automatically Claims Your Playtime",
+    Default     = false,
+}):OnChanged(function(state) AutoCollectRewards = state end)
+
+-- ── Auto Buy/Roll Loop ──────────────────────────────────────────────────────
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if AutoBuyRoll then
+            local matchFound = false
+
+            pcall(function()
+                local function checkSeedGuis(parent)
+                    for _, obj in ipairs(parent:GetChildren()) do
+                        if matchFound then return end
+                        pcall(function()
+                            local seedGui = obj:FindFirstChild("SeedGui")
+                            if seedGui then
+                                local rarity = seedGui.Frame.InfoFrame.Rarity.Text:gsub("%s+", "")
+                                for selected, enabled in pairs(SelectedRarities) do
+                                    if enabled and rarity:lower() == selected:lower() then
+                                        matchFound = true
+                                        -- Fire BuySeed for every amount 1 through 10
+                                        for amount = 1, 6 do
+                                            BuySeed:FireServer(amount)
+                                            task.wait(0.05)
+                                        end
+                                        return
+                                    end
+                                end
+                            else
+                                checkSeedGuis(obj)
+                            end
+                        end)
+                    end
+                end
+                checkSeedGuis(workspace)
+            end)
+
+            -- Only roll when no matching seed is currently showing
+            if not matchFound then
+                for i = 1, 10 do
+                    pcall(function() RollSeeds:FireServer() end)
+                    task.wait(0.05)
+                end
+                task.wait(0.3)
+            end
+        end
+    end
+end)
+
+-- ── Auto Sell Crates & Auto Upgrade Plants & Auto Collect Rewards Loop ───────
+task.spawn(function()
+    while true do
+        task.wait(1)
+        local plot = getOwnedPlot()
+
+        if AutoSellCrate and plot then
+            pcall(function()
+                local crates = plot:FindFirstChild("Crates")
+                if crates then
+                    for _, crate in ipairs(crates:GetChildren()) do
+                        local prompt = crate:FindFirstChildWhichIsA("ProximityPrompt", true)
+                        if prompt and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            LocalPlayer.Character:PivotTo(crate:GetPivot())
+                            task.wait(0.2)
+                            fireproximityprompt(prompt)
+                            task.wait(0.2)
+                        end
+                    end
+                    SellCrates:FireServer()
+                end
+            end)
+        end
+
+        if AutoUpgradePlants and plot then
+            pcall(function()
+                local farmPlot = plot:FindFirstChild("FarmPlot")
+                if farmPlot then
+                    for _, subPlot in ipairs(farmPlot:GetChildren()) do
+                        local dirt = subPlot:FindFirstChild("Dirt")
+                        if dirt then
+                            UpgradePlant:InvokeServer(dirt)
+                        end
+                    end
+                end
+            end)
+        end
+
+        if AutoCollectRewards then
+            pcall(function() ClaimPlaytimeReward:InvokeServer() end)
+        end
+    end
+end)
+
+-- =====================
+--      PLACE TAB
+-- =====================
+
+Tabs.Place:AddParagraph({
+    Title   = "Auto Place Seeds",
+    Content = "Teleports and place.",
+})
+
+Tabs.Place:AddToggle("AutoPlaceToggle", {
+    Title       = "Auto Plant/Place",
+    Description = "Auto Plant All.",
+    Default     = false,
+}):OnChanged(function(state) AutoPlace = state end)
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if AutoPlace then
+            pcall(function()
+                local character = LocalPlayer.Character
+                local humanoid  = character and character:FindFirstChild("Humanoid")
+
+                if humanoid then
+                    for _, item in ipairs(LocalPlayer.Backpack:GetChildren()) do
+                        if item:GetAttribute("Plant") then
+                            humanoid:EquipTool(item)
+                            task.wait(0.1)
+                            break
+                        end
+                    end
+                end
+
+                local plot = getOwnedPlot()
+                if plot then
+                    local farmPlot = plot:FindFirstChild("FarmPlot")
+                    if farmPlot then
+                        for _, subPlot in ipairs(farmPlot:GetChildren()) do
+                            local dirt = subPlot:FindFirstChild("Dirt")
+                            if dirt and not isDirtOccupied(dirt) then
+                                teleportToPart(dirt)
+                                PlantSeed:FireServer(dirt)
+                                task.wait(0.15)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- =====================
+--      UNLOCK TAB
+-- =====================
+
+Tabs.Unlock:AddParagraph({
+    Title   = "Auto Unlock Plots",
+    Content = "Auto Unlocks.",
+})
+
+Tabs.Unlock:AddToggle("AutoUnlockToggle", {
+    Title       = "Auto Unlock",
+    Description = "Unlocks More Farm Space",
+    Default     = false,
+}):OnChanged(function(state) AutoUnlock = state end)
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if AutoUnlock then
+            pcall(function()
+                local plot = getOwnedPlot()
+                if plot then
+                    local farmPlot = plot:FindFirstChild("FarmPlot")
+                    if farmPlot then
+                        for _, subPlot in ipairs(farmPlot:GetChildren()) do
+                            local dirt = subPlot:FindFirstChild("Dirt")
+                            if dirt then
+                                UnlockPlot:FireServer(dirt)
+                                task.wait(0.2)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- =====================
+--    UPGRADES TAB
+-- =====================
+
+Tabs.Upgrades:AddParagraph({
+    Title   = "Auto Upgrades",
+    Content = "Purchase Upgrades.",
+})
+
+Tabs.Upgrades:AddToggle("AutoExpandFarm",     { Title = "Expand Farm",                  Default = false }):OnChanged(function(s) AutoExpandFarm     = s end)
+Tabs.Upgrades:AddToggle("AutoSeedLuck",       { Title = "Seed Luck",                    Default = false }):OnChanged(function(s) AutoSeedLuck       = s end)
+Tabs.Upgrades:AddToggle("AutoSeedRolls",      { Title = "Seed Rolls",                   Default = false }):OnChanged(function(s) AutoSeedRolls      = s end)
+Tabs.Upgrades:AddToggle("AutoSawYield",       { Title = "Saw Yield (All Floors)",       Default = false }):OnChanged(function(s) AutoSawYield       = s end)
+Tabs.Upgrades:AddToggle("AutoSprinklerPower", { Title = "Sprinkler Power (All Floors)", Default = false }):OnChanged(function(s) AutoSprinklerPower = s end)
+Tabs.Upgrades:AddToggle("AutoSawRange",       { Title = "Saw Range (All Floors)",       Default = false }):OnChanged(function(s) AutoSawRange       = s end)
+Tabs.Upgrades:AddToggle("AutoSprinklerRange", { Title = "Sprinkler Range (All Floors)", Default = false }):OnChanged(function(s) AutoSprinklerRange = s end)
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if AutoExpandFarm  then pcall(function() UpgradeFarm:InvokeServer()      end) end
+        if AutoSeedLuck    then pcall(function() UpgradeSeedLuck:InvokeServer()  end) end
+        if AutoSeedRolls   then pcall(function() UpgradeSeedRolls:InvokeServer() end) end
+
+        for i = 1, 5 do
+            local floor = "Floor" .. i
+            if AutoSawYield       then pcall(function() PlotUpgradeTransaction:InvokeServer("ExtraYield",          floor) end) end
+            if AutoSprinklerPower then pcall(function() PlotUpgradeTransaction:InvokeServer("ExtraPower",          floor) end) end
+            if AutoSawRange       then pcall(function() PlotUpgradeTransaction:InvokeServer("ExtraSawRange",       floor) end) end
+            if AutoSprinklerRange then pcall(function() PlotUpgradeTransaction:InvokeServer("ExtraSprinklerRange", floor) end) end
+        end
+    end
+end)
+
+-- =====================
+--      GEARS TAB
+-- =====================
+
+Tabs.Gears:AddParagraph({
+    Title   = "Fertilizers",
+    Content = "Auto Buy Fertilizer.",
+})
+
+Tabs.Gears:AddToggle("AutoNormalFertilizer", { Title = "Normal Fertilizer", Default = false }):OnChanged(function(s) AutoNormalFertilizer = s end)
+Tabs.Gears:AddToggle("AutoStrongFertilizer", { Title = "Strong Fertilizer", Default = false }):OnChanged(function(s) AutoStrongFertilizer = s end)
+Tabs.Gears:AddToggle("AutoSuperFertilizer",  { Title = "Super Fertilizer",  Default = false }):OnChanged(function(s) AutoSuperFertilizer  = s end)
+
+Tabs.Gears:AddParagraph({
+    Title   = "Sprays",
+    Content = "Auto Buy Sprays.",
+})
+
+Tabs.Gears:AddToggle("AutoAcidSpray",        { Title = "Acid Spray",        Default = false }):OnChanged(function(s) AutoAcidSpray        = s end)
+Tabs.Gears:AddToggle("AutoWetSpray",         { Title = "Wet Spray",         Default = false }):OnChanged(function(s) AutoWetSpray         = s end)
+Tabs.Gears:AddToggle("AutoFrozenSpray",      { Title = "Frozen Spray",      Default = false }):OnChanged(function(s) AutoFrozenSpray      = s end)
+Tabs.Gears:AddToggle("AutoVoidSpray",        { Title = "Void Spray",        Default = false }):OnChanged(function(s) AutoVoidSpray        = s end)
+Tabs.Gears:AddToggle("AutoRadioactiveSpray", { Title = "Radioactive Spray", Default = false }):OnChanged(function(s) AutoRadioactiveSpray = s end)
+Tabs.Gears:AddToggle("AutoRainbowSpray",     { Title = "Rainbow Spray",     Default = false }):OnChanged(function(s) AutoRainbowSpray     = s end)
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if AutoNormalFertilizer then pcall(function() GearTransaction:InvokeServer("Normal Fertilizer") end) end
+        if AutoStrongFertilizer then pcall(function() GearTransaction:InvokeServer("Strong Fertilizer") end) end
+        if AutoSuperFertilizer  then pcall(function() GearTransaction:InvokeServer("Super Fertilizer")  end) end
+        if AutoAcidSpray        then pcall(function() GearTransaction:InvokeServer("Acid Spray")        end) end
+        if AutoWetSpray         then pcall(function() GearTransaction:InvokeServer("Wet Spray")         end) end
+        if AutoFrozenSpray      then pcall(function() GearTransaction:InvokeServer("Frozen Spray")      end) end
+        if AutoVoidSpray        then pcall(function() GearTransaction:InvokeServer("Void Spray")        end) end
+        if AutoRadioactiveSpray then pcall(function() GearTransaction:InvokeServer("Radioactive Spray") end) end
+        if AutoRainbowSpray     then pcall(function() GearTransaction:InvokeServer("Rainbow Spray")     end) end
+    end
+end)
+
+-- =====================
+--    SETTINGS TAB
+-- =====================
+
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+SaveManager:LoadAutoloadConfig()
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title    = "Farm Script",
+    Content  = "Loaded successfully!",
+    Duration = 5
+})
