@@ -826,6 +826,7 @@ local Games = {
     {Name = "Escape Rain For Lucky Blocks",               ID = "74951754415707", Script = "https://raw.githubusercontent.com/robdipekks-cell/Scritphub/refs/heads/main/Rain"},
     {Name = "Dont Steal The Bobo",               ID = "120135584963579", Script = "https://raw.githubusercontent.com/robdipekks-cell/Scritphub/refs/heads/main/Bobo"},
     {Name = "Build A Ring Farm",               ID = "107646426076756", Script = "https://raw.githubusercontent.com/robdipekks-cell/Scritphub/refs/heads/main/Afarm"},
+    {Name = "Split Or Steal Brainrot",               ID = "70959844973091", Script = "https://raw.githubusercontent.com/robdipekks-cell/Scritphub/refs/heads/main/Splitsteal"},
 }
 
 local currentScript  = nil
