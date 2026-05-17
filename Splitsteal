@@ -1,0 +1,293 @@
+-- Brainrots Hub | Fluent UI Library
+
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+-- ─────────────────────────────────────────────
+--  Services & Shortcuts
+-- ─────────────────────────────────────────────
+local RS  = game:GetService("ReplicatedStorage")
+local BT  = RS:WaitForChild("BrainrotsThings"):WaitForChild("Misc"):WaitForChild("Events")
+local PLR = BT:WaitForChild("Player")
+local TBL = BT:WaitForChild("Tables")
+
+-- ─────────────────────────────────────────────
+--  State
+-- ─────────────────────────────────────────────
+local State = {
+    Upgrade        = false,
+    AutoSplit      = false,
+    AutoSteal      = false,
+    AutoRebirth    = false,
+    AutoPlay       = false,
+    AutoPlayCD     = 1,
+    SelectedTable  = "Table1",
+    LuckyBlock     = false,
+    LuckyCooldown  = 1,
+    
+    -- New States
+    AutoLuck       = false,
+    LuckAmount     = "10",
+    AutoSell       = false,
+    SellRarities   = {},
+    AutoChair      = false,
+    SelectedChairs = {}
+}
+
+local function loop(stateKey, fn, cdKey)
+    task.spawn(function()
+        while State[stateKey] do
+            pcall(fn)
+            task.wait(math.max(0.1, cdKey and State[cdKey] or 0.5))
+        end
+    end)
+end
+
+-- ─────────────────────────────────────────────
+--  Window
+-- ─────────────────────────────────────────────
+local Window = Fluent:CreateWindow({
+    Title       = "Split Or Steal Brainrot",
+    SubTitle    = "By Oorbits",
+    TabWidth    = 160,
+    Size        = UDim2.fromOffset(580, 460),
+    Acrylic     = true,
+    Theme       = "Dark",
+    MinimizeKey = Enum.KeyCode.RightControl,
+})
+
+-- ─────────────────────────────────────────────
+--  Tabs
+-- ─────────────────────────────────────────────
+local Tabs = {
+    Main     = Window:AddTab({ Title = "Main",         Icon = "package"      }),
+    Play     = Window:AddTab({ Title = "Play",         Icon = "play"     }),
+    Luck     = Window:AddTab({ Title = "Upgrade Luck", Icon = "star"     }),
+    Sell     = Window:AddTab({ Title = "Sell",         Icon = "coins"    }),
+    Chair    = Window:AddTab({ Title = "Chair",        Icon = "box"      }),
+    Settings = Window:AddTab({ Title = "Settings",     Icon = "settings" }),
+}
+
+-- ─────────────────────────────────────────────
+--  MAIN TAB
+-- ─────────────────────────────────────────────
+
+Tabs.Main:AddToggle("Upgrade", {
+    Title    = "Auto Collect",
+    Default  = false,
+    Callback = function(v)
+        State.Upgrade = v
+        if v then
+            loop("Upgrade", function()
+                PLR:WaitForChild("CollectAll"):FireServer()
+            end)
+        end
+    end,
+})
+
+Tabs.Main:AddToggle("AutoSplit", {
+    Title    = "Auto Split",
+    Default  = false,
+    Callback = function(v)
+        State.AutoSplit = v
+        if v then
+            loop("AutoSplit", function()
+                TBL:WaitForChild("DecisionRequest"):FireServer("Split")
+            end)
+        end
+    end,
+})
+
+Tabs.Main:AddToggle("AutoSteal", {
+    Title    = "Auto Steal",
+    Default  = false,
+    Callback = function(v)
+        State.AutoSteal = v
+        if v then
+            loop("AutoSteal", function()
+                TBL:WaitForChild("DecisionRequest"):FireServer("Steal")
+            end)
+        end
+    end,
+})
+
+Tabs.Main:AddToggle("AutoRebirth", {
+    Title    = "Auto Rebirth",
+    Default  = false,
+    Callback = function(v)
+        State.AutoRebirth = v
+        if v then
+            loop("AutoRebirth", function()
+                PLR:WaitForChild("RebirthRequest"):FireServer()
+            end)
+        end
+    end,
+})
+
+-- ─────────────────────────────────────────────
+--  PLAY TAB
+-- ─────────────────────────────────────────────
+Tabs.Play:AddParagraph({
+    Title   = "Auto Play",
+    Content = "Select a table then enable Auto Play. Tables 10-15 are VIP.",
+})
+
+-- Build table list with VIP labels
+local tableValues = {}
+for i = 1, 15 do
+    local suffix = (i >= 10) and " (VIP)" or ""
+    table.insert(tableValues, "Table" .. i .. suffix)
+end
+
+Tabs.Play:AddDropdown("TableSelect", {
+    Title    = "Select Table",
+    Values   = tableValues,
+    Multi    = false,
+    Default  = 1,
+    Callback = function(v)
+        -- Strip VIP suffix to get clean table name for FireServer
+        State.SelectedTable = v:match("^(Table%d+)")
+    end,
+})
+
+Tabs.Play:AddInput("AutoPlayCooldown", {
+    Title       = "Cooldown (seconds)",
+    Default     = "1",
+    Placeholder = "e.g. 2",
+    Numeric     = true,
+    Finished    = false,
+    Callback    = function(v)
+        State.AutoPlayCD = tonumber(v) or 1
+    end,
+})
+
+Tabs.Play:AddToggle("AutoPlay", {
+    Title    = "Auto Play",
+    Default  = false,
+    Callback = function(v)
+        State.AutoPlay = v
+        if v then
+            loop("AutoPlay", function()
+                PLR:WaitForChild("PlayAgainRequest"):FireServer(State.SelectedTable)
+            end, "AutoPlayCD")
+        end
+    end,
+})
+
+-- ─────────────────────────────────────────────
+--  UPGRADE LUCK TAB
+-- ─────────────────────────────────────────────
+Tabs.Luck:AddInput("LuckAmount", {
+    Title       = "Luck Amount",
+    Default     = "10",
+    Placeholder = "Amount to upgrade",
+    Numeric     = true,
+    Finished    = false,
+    Callback    = function(v)
+        State.LuckAmount = tostring(v)
+    end,
+})
+
+Tabs.Luck:AddToggle("AutoLuck", {
+    Title    = "Auto Upgrade Luck",
+    Default  = false,
+    Callback = function(v)
+        State.AutoLuck = v
+        if v then
+            loop("AutoLuck", function()
+                PLR:WaitForChild("PurchaseLuckUpgrade"):FireServer(State.LuckAmount)
+            end)
+        end
+    end,
+})
+
+-- ─────────────────────────────────────────────
+--  SELL TAB
+-- ─────────────────────────────────────────────
+Tabs.Sell:AddDropdown("SellRarities", {
+    Title    = "Select Rarities to Sell",
+    Values   = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"},
+    Multi    = true,
+    Default  = {},
+    Callback = function(v)
+        State.SellRarities = v
+    end,
+})
+
+Tabs.Sell:AddToggle("AutoSell", {
+    Title    = "Auto Sell",
+    Default  = false,
+    Callback = function(v)
+        State.AutoSell = v
+        if v then
+            loop("AutoSell", function()
+                -- Fluent UI multidropdown returns a dictionary: { ["Common"] = true, ["Rare"] = true }
+                for rarity, isSelected in pairs(State.SellRarities) do
+                    if isSelected then
+                        PLR:WaitForChild("QuickSellRarity"):FireServer(rarity)
+                    end
+                end
+            end)
+        end
+    end,
+})
+
+-- ─────────────────────────────────────────────
+--  CHAIR TAB
+-- ─────────────────────────────────────────────
+Tabs.Chair:AddDropdown("ChairSelect", {
+    Title    = "Select Chairs",
+    Values   = {
+        "GoldChair", "DiamondChair", "GalaxyChair", 
+        "LavaChair", "RainbowChair", "Alien Wheelie", 
+        "Futuristic Gamer Chair", "Hacked Gamer Chair"
+    },
+    Multi    = true,
+    Default  = {},
+    Callback = function(v)
+        State.SelectedChairs = v
+    end,
+})
+
+Tabs.Chair:AddToggle("AutoChair", {
+    Title    = "Auto Equip/Buy Chair",
+    Default  = false,
+    Callback = function(v)
+        State.AutoChair = v
+        if v then
+            loop("AutoChair", function()
+                for chairName, isSelected in pairs(State.SelectedChairs) do
+                    if isSelected then
+                        PLR:WaitForChild("EquipChair"):FireServer(chairName)
+                    end
+                end
+            end)
+        end
+    end,
+})
+
+-- ─────────────────────────────────────────────
+--  SETTINGS TAB
+-- ─────────────────────────────────────────────
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("BrainrotsHub")
+SaveManager:SetFolder("BrainrotsHub/configs")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+-- ─────────────────────────────────────────────
+--  Init
+-- ─────────────────────────────────────────────
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title    = "Oorbits Hub",
+    Content  = "Loaded successfully! Press RightCtrl to minimise.",
+    Duration = 5,
+})
+
+SaveManager:LoadAutoloadConfig()
